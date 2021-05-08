@@ -24,12 +24,10 @@ import kotlin.reflect.full.primaryConstructor
 
 
 class MainViewModel(
-    sharedPreferences: SharedPreferences,
     val database: ExpenseDatabaseDao,
     private val mainRepository: MainRepository
 ) : ViewModel() {
 
-    private var sharedPref: SharedPreferences = sharedPreferences
 
     private val _response = MutableLiveData<String>()
     val response: LiveData<String>

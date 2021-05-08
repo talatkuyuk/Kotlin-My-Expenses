@@ -65,7 +65,7 @@ class MainFragment : Fragment() {
         val dataSource = ExpenseDatabase.getInstance(application).expenseDatabaseDao
         val apiHelper = ApiHelper(RetrofitBuilder.apiService)
 
-        val viewModelFactory = MainViewModelFactory(sharedPreferences, dataSource, apiHelper)
+        val viewModelFactory = MainViewModelFactory(dataSource, apiHelper)
 
         mainViewModel =
             ViewModelProvider(
@@ -100,7 +100,7 @@ class MainFragment : Fragment() {
                 //Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
                 Log.d("CURRENT CONVERTER", it.toString())
 
-                sharedPreferences.edit().putString("converter", Json.encodeToString(it)).apply();
+                //sharedPreferences.edit().putString("converter", Json.encodeToString(it)).apply();
 
             }
         }
