@@ -19,10 +19,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.talatkuyuk.myexpenses.R
 import com.talatkuyuk.myexpenses.data.api.ApiHelper
 import com.talatkuyuk.myexpenses.data.api.RetrofitBuilder
+import com.talatkuyuk.myexpenses.database.Expense
 import com.talatkuyuk.myexpenses.database.ExpenseDatabase
 import com.talatkuyuk.myexpenses.databinding.FragmentMainBinding
 import com.talatkuyuk.myexpenses.enums.Money
 import com.talatkuyuk.myexpenses.utils.Utils
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -39,6 +41,7 @@ class MainFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -62,7 +65,7 @@ class MainFragment : Fragment() {
         val dataSource = ExpenseDatabase.getInstance(application).expenseDatabaseDao
         val apiHelper = ApiHelper(RetrofitBuilder.apiService)
 
-        val viewModelFactory = MainViewModelFactory(dataSource, apiHelper)
+        val viewModelFactory = MainViewModelFactory(sharedPreferences, dataSource, apiHelper)
 
         mainViewModel =
             ViewModelProvider(
@@ -77,7 +80,7 @@ class MainFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         mainViewModel.allExpensesConverted.observe(viewLifecycleOwner) { expenses ->
-            Toast.makeText(context, "allExpensesConverted updated", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(context, "allExpensesConverted updated", Toast.LENGTH_SHORT).show()
             expenses.let { recyclerView.adapter = MyRecyclerViewAdapter(it, mainViewModel.currencyType.value!!, {
                 val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
                     Json.encodeToString(it)
@@ -94,8 +97,10 @@ class MainFragment : Fragment() {
 
         mainViewModel.currentConverter.observe(viewLifecycleOwner) {
             it.let {
-                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
+                //Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
                 Log.d("CURRENT CONVERTER", it.toString())
+
+                sharedPreferences.edit().putString("converter", Json.encodeToString(it)).apply();
 
             }
         }

@@ -1,5 +1,7 @@
 package com.talatkuyuk.myexpenses.screens.main
 
+import android.app.Application
+import android.content.SharedPreferences
 import androidx.lifecycle.*
 import com.talatkuyuk.myexpenses.data.model.Converter
 import com.talatkuyuk.myexpenses.data.repository.MainRepository
@@ -9,6 +11,7 @@ import com.talatkuyuk.myexpenses.enums.Money
 import com.talatkuyuk.myexpenses.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -21,9 +24,12 @@ import kotlin.reflect.full.primaryConstructor
 
 
 class MainViewModel(
+    sharedPreferences: SharedPreferences,
     val database: ExpenseDatabaseDao,
     private val mainRepository: MainRepository
 ) : ViewModel() {
+
+    private var sharedPref: SharedPreferences = sharedPreferences
 
     private val _response = MutableLiveData<String>()
     val response: LiveData<String>
@@ -167,6 +173,11 @@ class MainViewModel(
                 _response.value = "OK"
             } catch (e: Exception) {
                 _response.value = "Failure: ${e.message}"
+
+                // Yapmaya çalıştım ama olmadı.
+                //val converterString: String? = sharedPref.getString("converter", "")
+                //val converter: Converter = Json.decodeFromString<Converter>(converterString!!)
+                //_currentConverter.value = converter
             }
         }
     }
