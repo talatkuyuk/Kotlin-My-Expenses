@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="expebseDetailViewModel"
+            type="com.talatkuyuk.myexpenses.screens.addexpense.AddExpenseViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".screens.expensedetail.ExpenseDetailFragment">
+
+        <TextView
+            android:id="@+id/textTitleExpenseDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/otheview_margin_from_side"
+            android:layout_marginTop="@dimen/otheview_margin_from_side"
+            android:text="@string/expense_detail"
+            android:textSize="@dimen/otheview_text_size_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <View
+            android:id="@+id/lineExpenseDetail"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginTop="6dp"
+            android:background="@color/gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textTitleExpenseDetail" />
+
+        <ImageView
+            android:id="@+id/imageCategoryForDetail"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginHorizontal="@dimen/otheview_margin_from_side"
+            android:layout_marginTop="32dp"
+            android:src="@android:drawable/presence_video_away"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lineExpenseDetail"
+            android:contentDescription="Expense Detail Category Image" />
+
+        <TextView
+            android:id="@+id/textDescForDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/otheview_margin_from_side"
+            android:layout_marginTop="32dp"
+            tools:text="TextView"
+            android:textSize="@dimen/cardview_text_size"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imageCategoryForDetail" />
+
+        <TextView
+            android:id="@+id/textAmountForDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/otheview_margin_from_side"
+            android:layout_marginTop="32dp"
+            tools:text="TextView"
+            android:textSize="@dimen/cardview_text_size"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textDescForDetail" />
+
+        <Button
+            android:id="@+id/deleteButtonForDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/otheview_margin_from_side"
+            android:layout_marginTop="32dp"
+            android:text="@string/delete_expense"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textAmountForDetail" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

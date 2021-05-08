@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="mainViewModel"
+            type="com.talatkuyuk.myexpenses.screens.main.MainViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginHorizontal="@dimen/mainview_margin_from_side"
+            android:layout_marginTop="@dimen/mainview_margin_from_side"
+            app:cardBackgroundColor="@color/active"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="10dp"
+            app:cardMaxElevation="12dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" >
+
+            <TextView
+                android:id="@+id/textViewHello"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center"
+                android:layout_marginStart="@dimen/cardview_margin_from_side"
+                android:layout_marginBottom="@dimen/cardview_margin_from_eachother"
+                android:text="@string/hello"
+                android:textColor="@color/white"
+                android:textSize="@dimen/cardview_text_size" />
+
+            <TextView
+                android:id="@+id/textViewIdentity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center"
+                android:layout_marginStart="@dimen/cardview_margin_from_side"
+                android:layout_marginTop="@dimen/cardview_margin_from_eachother"
+                tools:text="Talat Bey"
+                android:textColor="@color/white"
+                android:textSize="@dimen/cardview_text_size"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textViewTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center"
+                android:layout_marginEnd="@dimen/cardview_margin_from_side"
+                android:layout_marginBottom="@dimen/cardview_margin_from_eachother"
+                android:text="@string/total_expenses"
+                android:textColor="@color/white"
+                android:textSize="@dimen/cardview_text_size" />
+
+            <TextView
+                android:id="@+id/textViewAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center"
+                android:layout_marginTop="@dimen/cardview_margin_from_eachother"
+                android:layout_marginEnd="@dimen/cardview_margin_from_side"
+                android:text="@{mainViewModel.totalAmount}"
+                tools:text="300 TL"
+                android:textColor="@color/white"
+                android:textSize="@dimen/cardview_text_size"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/buttonTL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/mainview_margin_from_side"
+            android:layout_marginStart="15dp"
+            style="?attr/materialButtonOutlinedStyle"
+            app:strokeColor="@color/black"
+            app:strokeWidth="2dp"
+            app:elevation="2dp"
+            android:minHeight="0dp"
+            android:text="@string/tl"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeTL()}"
+            app:layout_constraintEnd_toStartOf="@+id/buttonSterlin"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+        <Button
+            android:id="@+id/buttonSterlin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?attr/materialButtonOutlinedStyle"
+            app:strokeColor="@color/black"
+            app:strokeWidth="2dp"
+            app:elevation="2dp"
+            android:minHeight="0dp"
+            android:text="@string/sterlin"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeSterlin()}"
+            app:layout_constraintEnd_toStartOf="@+id/buttonEuro"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/buttonTL"
+            app:layout_constraintTop_toTopOf="@+id/buttonTL" />
+
+        <Button
+            android:id="@+id/buttonEuro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?attr/materialButtonOutlinedStyle"
+            app:strokeColor="@color/black"
+            app:strokeWidth="2dp"
+            app:elevation="2dp"
+            android:minHeight="0dp"
+            android:text="@string/euro"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeEuro()}"
+            app:layout_constraintEnd_toStartOf="@+id/buttonDolar"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/buttonSterlin"
+            app:layout_constraintTop_toTopOf="@+id/buttonSterlin" />
+
+        <Button
+            android:id="@+id/buttonDolar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            style="?attr/materialButtonOutlinedStyle"
+            app:strokeColor="@color/black"
+            app:strokeWidth="2dp"
+            app:elevation="2dp"
+            android:minHeight="0dp"
+            android:text="@string/dolar"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeDolar()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/buttonEuro"
+            app:layout_constraintTop_toTopOf="@+id/buttonEuro" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/mainview_margin_from_side"
+            android:layout_marginHorizontal="@dimen/mainview_margin_from_side"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonTL"
+            tools:listitem="@layout/expense_item" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/extended_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/add_an_expense"
+            android:text="@string/add"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            app:icon="@drawable/ic_plus_24px"
+            app:iconTint="@color/white"
+            app:backgroundTint="@color/active"
+            app:layout_constraintBottom_toBottomOf="@+id/list"
+            app:layout_constraintEnd_toEndOf="@+id/list" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

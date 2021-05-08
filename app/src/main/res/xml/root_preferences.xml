@@ -1,0 +1,32 @@
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/background">
+
+    <PreferenceCategory
+        app:title="@string/pref_header_identity"
+        android:textSize="24px"
+        android:layout="@layout/custom_settings_category_layout">
+
+        <EditTextPreference
+            app:key="name"
+            app:title="@string/pref_title_name"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/gender_entries"
+            app:entryValues="@array/gender_values"
+            app:key="gender"
+            app:title="@string/pref_title_gender"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            android:title="Go to Main"
+            android:key="@string/pref_key_button"
+            android:summary="This is a cool button"
+            android:layout="@layout/custom_settings_button_layout"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
