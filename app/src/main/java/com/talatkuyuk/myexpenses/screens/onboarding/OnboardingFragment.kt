@@ -17,6 +17,7 @@ import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.onboarding.ViewPagerAdapter
 import com.talatkuyuk.myexpenses.R
+import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.databinding.FragmentOnboardingBinding
 import com.talatkuyuk.myexpenses.utils.Utils
 
@@ -33,13 +34,11 @@ class OnboardingFragment : Fragment() {
     val screenRectPx: Rect
         get() = displayMetrics.run { Rect(0, 0, widthPixels, heightPixels) }
 
-    private lateinit var sharedPreferences: SharedPreferences
+    private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -90,7 +89,7 @@ class OnboardingFragment : Fragment() {
         }
 
         binding.checkboxOnboarding.setOnCheckedChangeListener { _, isChecked ->
-            sharedPreferences.edit().putBoolean("isVisitedOnbording", isChecked).apply();
+            preferenceRepository.setIsVisitedOnboarding(isChecked)
         }
 
         binding.nextbtn.setOnClickListener {
@@ -130,10 +129,10 @@ class OnboardingFragment : Fragment() {
 
     private fun navigateToNextScreen() {
 
-        val name: String? = sharedPreferences.getString("name", "@")
-        val gender: String? = sharedPreferences.getString("gender", "@")
+        val name: String = preferenceRepository.getName()
+        val gender: String = preferenceRepository.getGender()
 
-        if (name == null || name == "@"  || name.length < 2 || gender == null || gender == "@" ) {
+        if (name.length < 2 || gender == "" ) {
             val action = OnboardingFragmentDirections.actionOnboardingFragmentToSettingsFragment(true)
             binding.root.findNavController().navigate(action)
         } else {

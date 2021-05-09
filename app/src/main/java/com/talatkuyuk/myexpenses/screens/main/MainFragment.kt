@@ -1,5 +1,6 @@
 package com.talatkuyuk.myexpenses.screens.main
 
+import android.content.Context
 import android.content.SharedPreferences
 
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.talatkuyuk.myexpenses.R
 import com.talatkuyuk.myexpenses.data.api.ApiHelper
 import com.talatkuyuk.myexpenses.data.api.RetrofitBuilder
+import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.database.Expense
 import com.talatkuyuk.myexpenses.database.ExpenseDatabase
 import com.talatkuyuk.myexpenses.databinding.FragmentMainBinding
@@ -31,7 +33,8 @@ import kotlinx.serialization.json.Json
 
 class MainFragment : Fragment() {
 
-    private lateinit var sharedPreferences: SharedPreferences
+    //private lateinit var sharedPreferences: SharedPreferences
+    private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
     private lateinit var binding: FragmentMainBinding
 
@@ -39,9 +42,6 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -65,7 +65,9 @@ class MainFragment : Fragment() {
         val dataSource = ExpenseDatabase.getInstance(application).expenseDatabaseDao
         val apiHelper = ApiHelper(RetrofitBuilder.apiService)
 
-        val viewModelFactory = MainViewModelFactory(dataSource, apiHelper)
+        //sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+        val viewModelFactory = MainViewModelFactory(application, dataSource, apiHelper)
 
         mainViewModel =
             ViewModelProvider(
@@ -80,70 +82,51 @@ class MainFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         mainViewModel.allExpensesConverted.observe(viewLifecycleOwner) { expenses ->
-            //Toast.makeText(context, "allExpensesConverted updated", Toast.LENGTH_SHORT).show()
-            expenses.let { recyclerView.adapter = MyRecyclerViewAdapter(it, mainViewModel.currencyType.value!!, {
-                val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
-                    Json.encodeToString(it)
-                )
-                binding.root.findNavController().navigate(action)
-            }) }
+            expenses.let {
+                //Log.d("CURRENT EXPENSE LIST", it.toString())
+
+                recyclerView.adapter = MyRecyclerViewAdapter(it, mainViewModel.currencyType.value!!, {
+                    val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
+                        Json.encodeToString(it)
+                    )
+                    binding.root.findNavController().navigate(action)
+                })
+            }
         }
 
-        mainViewModel.isTL.observe(viewLifecycleOwner) { type ->
-            type.let {
-                Log.d("RETROFIT RESULT", it.toString())
+        mainViewModel.isTL.observe(viewLifecycleOwner) {
+            it.let {
+                //Log.d("TL BUTTON SELECTED", it.toString())
             }
         }
 
         mainViewModel.currentConverter.observe(viewLifecycleOwner) {
             it.let {
-                //Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
                 Log.d("CURRENT CONVERTER", it.toString())
-
-                //sharedPreferences.edit().putString("converter", Json.encodeToString(it)).apply();
-
+                if (!it.isNeutral())
+                    preferenceRepository.setConverter(it)
             }
         }
 
         mainViewModel.response.observe(viewLifecycleOwner) {
             it.let {
                 Log.d("RETROFIT RESULT", it)
-
             }
         }
 
         mainViewModel.currencyType.observe(viewLifecycleOwner) { type ->
             type.let {
                 mainViewModel.updateExchangeRates()
-                when(type) {
-                    Money.TL.symbol -> {
-                        binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_error))
-                        binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                    }
-                    Money.EURO.symbol -> {
-                        binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_error))
-                        binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                    }
-                    Money.STERLIN.symbol -> {
-                        binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_error))
-                        binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                    }
-                    Money.DOLAR.symbol -> {
-                        binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
-                        binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_error))
+                arrangeButtonsColor(it)
+                mainViewModel.allExpenses.value.let {
+                    if (  it == null || it.size == 0) {
+                        binding.textViewNoContent.visibility = View.VISIBLE
+                    } else {
+                        binding.textViewNoContent.visibility = View.GONE
                     }
                 }
             }
         }
-
 
         return view
     }
@@ -158,8 +141,8 @@ class MainFragment : Fragment() {
         }
 
         //for test purposes
-        //sharedPreferences.edit().putBoolean("isVisitedOnbording", false).apply()
-        //sharedPreferences.edit().putString("name", "x").apply()
+        //preferenceRepository.setIsVisitedOnboarding(false)
+        //preferenceRepository.setName("")
 
         binding.cardView.setOnClickListener{
             val action = MainFragmentDirections.actionMainFragmentToSettingsFragment()
@@ -168,8 +151,8 @@ class MainFragment : Fragment() {
     }
 
     private fun setIdendity() {
-        val name: String? = sharedPreferences.getString("name", "NoName")
-        val gender: String? = sharedPreferences.getString("gender", "None")
+        val name: String = preferenceRepository.getName()
+        val gender: String = preferenceRepository.getGender()
 
         val identity: String = when (gender){
             "male" -> "Mr. " + name
@@ -178,6 +161,47 @@ class MainFragment : Fragment() {
         }
 
         binding.textViewIdentity.text = identity
+    }
+
+
+    private fun arrangeButtonsColor(type: String) {
+        when(type) {
+            Money.TL.symbol -> {
+                binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_error))
+                binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+            }
+            Money.EURO.symbol -> {
+                binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_error))
+                binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+            }
+            Money.STERLIN.symbol -> {
+                binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_error))
+                binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+            }
+            Money.DOLAR.symbol -> {
+                binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_error))
+                binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+            }
+            else -> {
+                binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonEuro.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonSterlin.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonDolar.setTextColor(getResources().getColor(R.color.design_default_color_primary))
+                binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_error))
+            }
+        }
     }
 
 }

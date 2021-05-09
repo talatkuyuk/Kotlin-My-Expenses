@@ -9,15 +9,14 @@
         android:layout="@layout/custom_settings_category_layout">
 
         <EditTextPreference
-            app:key="name"
+            app:key="Name"
             app:title="@string/pref_title_name"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            app:defaultValue="reply"
             app:entries="@array/gender_entries"
             app:entryValues="@array/gender_values"
-            app:key="gender"
+            app:key="Gender"
             app:title="@string/pref_title_gender"
             app:useSimpleSummaryProvider="true" />
 

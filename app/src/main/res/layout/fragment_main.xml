@@ -78,22 +78,44 @@
         </androidx.cardview.widget.CardView>
 
         <Button
-            android:id="@+id/buttonTL"
+            android:id="@+id/buttonOriginal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginVertical="@dimen/mainview_margin_from_side"
-            android:layout_marginStart="15dp"
+            android:layout_marginStart="10dp"
             style="?attr/materialButtonOutlinedStyle"
             app:strokeColor="@color/black"
             app:strokeWidth="2dp"
             app:elevation="2dp"
             android:minHeight="0dp"
-            android:text="@string/tl"
-            android:onClick="@{() -> mainViewModel.makeCurrencyTypeTL()}"
-            app:layout_constraintEnd_toStartOf="@+id/buttonSterlin"
+            android:minWidth="0dp"
+            android:insetLeft= "0dp"
+            android:insetRight= "0dp"
+            android:text="@string/original"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeEmpty()}"
+            app:layout_constraintEnd_toStartOf="@+id/buttonTL"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+        <Button
+            android:id="@+id/buttonTL"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:insetLeft= "0dp"
+            android:insetRight= "0dp"
+            android:onClick="@{() -> mainViewModel.makeCurrencyTypeTL()}"
+            android:text="@string/tl"
+            app:elevation="2dp"
+            app:layout_constraintEnd_toStartOf="@+id/buttonSterlin"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/buttonOriginal"
+            app:layout_constraintTop_toTopOf="@+id/buttonOriginal"
+            app:strokeColor="@color/black"
+            app:strokeWidth="2dp" />
 
         <Button
             android:id="@+id/buttonSterlin"
@@ -104,6 +126,9 @@
             app:strokeWidth="2dp"
             app:elevation="2dp"
             android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:insetLeft= "0dp"
+            android:insetRight= "0dp"
             android:text="@string/sterlin"
             android:onClick="@{() -> mainViewModel.makeCurrencyTypeSterlin()}"
             app:layout_constraintEnd_toStartOf="@+id/buttonEuro"
@@ -120,6 +145,9 @@
             app:strokeWidth="2dp"
             app:elevation="2dp"
             android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:insetLeft= "0dp"
+            android:insetRight= "0dp"
             android:text="@string/euro"
             android:onClick="@{() -> mainViewModel.makeCurrencyTypeEuro()}"
             app:layout_constraintEnd_toStartOf="@+id/buttonDolar"
@@ -131,12 +159,15 @@
             android:id="@+id/buttonDolar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="10dp"
             style="?attr/materialButtonOutlinedStyle"
             app:strokeColor="@color/black"
             app:strokeWidth="2dp"
             app:elevation="2dp"
             android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:insetLeft= "0dp"
+            android:insetRight= "0dp"
             android:text="@string/dolar"
             android:onClick="@{() -> mainViewModel.makeCurrencyTypeDolar()}"
             app:layout_constraintEnd_toEndOf="parent"
@@ -170,6 +201,18 @@
             app:backgroundTint="@color/active"
             app:layout_constraintBottom_toBottomOf="@+id/list"
             app:layout_constraintEnd_toEndOf="@+id/list" />
+
+        <TextView
+            android:id="@+id/textViewNoContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/there_is_no_any_expense_yet"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonSterlin"
+            app:layout_constraintVertical_bias="0.41000003" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

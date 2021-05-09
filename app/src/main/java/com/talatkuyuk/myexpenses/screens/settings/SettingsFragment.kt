@@ -12,15 +12,15 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.talatkuyuk.myexpenses.R
+import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.utils.Utils
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
-    private lateinit var sharedPreferences: SharedPreferences
+    private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -40,13 +40,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun validatePreferences() {
         var validationErrorMessage: String = ""
 
-        val name: String? = sharedPreferences.getString("name", "@")
-        if ( name == null || name == "@" || name.length < 2) {
+        val name: String = preferenceRepository.getName()
+        if ( name.length < 2) {
             validationErrorMessage = "Name must be minimum 2 characters. "
         }
 
-        val gender: String? = sharedPreferences.getString("gender", "@")
-        if ( gender == null || gender == "@") {
+        val gender: String = preferenceRepository.getGender()
+        Log.d("gender: ", gender)
+        if ( gender == "" || gender == null) {
             validationErrorMessage += "Gender must be choosen. "
         }
 

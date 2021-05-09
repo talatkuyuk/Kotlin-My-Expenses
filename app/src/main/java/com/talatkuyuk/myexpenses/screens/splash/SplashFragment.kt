@@ -11,18 +11,13 @@ import android.view.ViewGroup
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import com.talatkuyuk.myexpenses.R
+import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.screens.onboarding.OnboardingFragmentDirections
 
 
 class SplashFragment : Fragment() {
 
-    private lateinit var sharedPreferences: SharedPreferences
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    }
+    private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,7 +29,7 @@ class SplashFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        Handler(Looper.getMainLooper()).postDelayed(runneable, 500)
+        Handler(Looper.getMainLooper()).postDelayed(runneable, 2000)
 
     }
 
@@ -52,10 +47,9 @@ class SplashFragment : Fragment() {
     var runneable: Runnable = object : Runnable {
         override fun run() {
 
-            val isVisitedOnbording: Boolean = sharedPreferences.getBoolean("isVisitedOnbording", false)
-
-            if (isVisitedOnbording) {
+            if ( preferenceRepository.getIsVisitedOnboarding() ) {
                 navigateToNextScreen()
+
             } else {
                 val action = SplashFragmentDirections.actionSplashFragmentToOnboardingFragment()
                 view!!.findNavController().navigate(action)
@@ -67,10 +61,10 @@ class SplashFragment : Fragment() {
 
     private fun navigateToNextScreen() {
 
-        val name: String? = sharedPreferences.getString("name", "@")
-        val gender: String? = sharedPreferences.getString("gender", "@")
+        val name: String = preferenceRepository.getName()
+        val gender: String = preferenceRepository.getGender()
 
-        if (name == null || name == "@"  || name.length < 2 || gender == null || gender == "@" ) {
+        if (name.length < 2 || gender == "" ) {
             val action = SplashFragmentDirections.actionSplashFragmentToSettingsFragment(true)
             requireView().findNavController().navigate(action)
         } else {

@@ -36,6 +36,7 @@
     <string name="next">NEXT</string>
     <string name="finish">FINISH</string>
     <string name="do_not_show_again">do not show again</string>
+    <string name="original">n/a</string>
     <string name="tl">TL</string>
     <string name="sterlin">Sterlin</string>
     <string name="euro">Euro</string>
@@ -64,5 +65,6 @@
     <string name="delete_expense">Delete Expense</string>
     <string name="expense_detail">Expense Detail</string>
     <string name="category_icon">Category Icon</string>
+    <string name="there_is_no_any_expense_yet">There is no expense yet.</string>
 
 </resources>

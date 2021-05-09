@@ -1,10 +1,14 @@
 package com.talatkuyuk.myexpenses.screens.main
 
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.*
 import com.talatkuyuk.myexpenses.data.model.Converter
 import com.talatkuyuk.myexpenses.data.repository.MainRepository
+import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.database.Expense
 import com.talatkuyuk.myexpenses.database.ExpenseDatabaseDao
 import com.talatkuyuk.myexpenses.enums.Money
@@ -12,11 +16,11 @@ import com.talatkuyuk.myexpenses.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.Retrofit
 import java.lang.Exception
+import java.text.DecimalFormat
 import kotlin.math.roundToInt
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
@@ -24,10 +28,12 @@ import kotlin.reflect.full.primaryConstructor
 
 
 class MainViewModel(
+    val application: Application,
     val database: ExpenseDatabaseDao,
     private val mainRepository: MainRepository
 ) : ViewModel() {
 
+    private val sharedpreferences: SharedPreferences  = application.getSharedPreferences("ExpenseShare", Context.MODE_PRIVATE)
 
     private val _response = MutableLiveData<String>()
     val response: LiveData<String>
@@ -47,92 +53,65 @@ class MainViewModel(
         return@map it == Money.TL.symbol
     }
 
-    init {
-        _currencyType.value = Money.TL.symbol
-    }
-
-
     var allExpenses: LiveData<List<Expense>> = database.getAllExpenses()
 
+    val allExpensesConverted: LiveData<List<Expense>> = Transformations.switchMap(response,
+        { res -> getConvertedExpenses(res) })
 
-    val allExpensesConverted: LiveData<List<Expense>> =
-        Transformations.switchMap(currentConverter) { getAllExpensesConverted(it) }
+    private fun getConvertedExpenses(string: String)
+        : LiveData<List<Expense>> = Transformations.map(allExpenses)  { originalExpenseList ->
+
+            if (currencyType.value == "") {
+                return@map originalExpenseList
+                // allExpensenses, yani bu fonksiyona giren originalExpenseList aslında hep orjinal kalıyor, onda sıkıntı yok. Kontrol ettim.
+                // Herhangi bir para birimi seçilmediğinde aslında allExpenses LiveData'sına tekrar bakıp orjinal listenin aynısını döndürmesi lazım
+                // amma-velakin neden döndürmüyor da hala allExpensesConverted'ın son halini kale alıyor onu çözemedim.
+                // Rakamlardaki sıkıntı bu fonksiyondan kaynaklanıyor. Ve tabiki aşağıdaki else part'ta da aynı sıkıntı var.
+                // Sonuçta rakamlar WEIRD oldu, çözemedim. Aslında bu fonksiyonu doğru çattığımı düşünüyorum.
+
+            } else {
+                originalExpenseList.forEach {
+                    it.expenseAmount = getProperAmount(currencyType.value!!, it, currentConverter.value!!)
+                }
+                Log.d("getConvertedExpenses", allExpenses.toString())
+                return@map originalExpenseList
+
+                // Aşağıdaki kod da işe yaramadı, yeni bir listeye aktarayım dedim ama bu da kâr etmedi.
+                //val liveData: LiveData<List<Expense>> = MutableLiveData<List<Expense>>()
+                /*val list  = mutableListOf<Expense>()
+                for (expense in it) {
+                    expense.let {
+                        val x = expense
+                        x.expenseAmount = getProperAmount(_currencyType.value!!, expense, converter)
+                        list.add(x)
+                    }
+                }*/
+                //return@map it
+            }
+
+    }
 
     val totalAmount: LiveData<String> = Transformations.map(allExpensesConverted) { expenses ->
         var total: Int = 0
         for (expense in expenses) {
             total += expense.expenseAmount
         }
-        return@map total.toString()
+        val dec = DecimalFormat("#,###")
+        val formattedTotal = dec.format(total)
+
+        if (currencyType.value == "") {
+            return@map "Select ${Money.TL.symbol}-${Money.STERLIN.symbol}-${Money.EURO.symbol}-${Money.DOLAR.symbol}"
+        } else {
+            return@map "${formattedTotal} ${currencyType.value}"
+        }
     }
 
 
-    fun getAllExpensesConverted(converter: Converter) =
-        allExpenses.map {
-            val newList: List<Expense> = it
-
-            for (expense in newList) {
-                when (currencyType.value) {
-                    Money.EURO.symbol -> {
-                        when (expense.expenseType) {
-                            Money.TL.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.TRY_EUR).roundToInt()
-                            Money.DOLAR.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.USD_EUR).roundToInt()
-                            Money.STERLIN.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.GBP_EUR).roundToInt()
-                            else -> expense.expenseAmount =
-                                expense.expenseAmount // it request else part, what to do :)
-                        }
-                    }
-                    Money.STERLIN.symbol -> {
-                        when (expense.expenseType) {
-                            Money.TL.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.TRY_GBP).roundToInt()
-                            Money.DOLAR.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.USD_GBP).roundToInt()
-                            Money.EURO.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.EUR_GBP).roundToInt()
-                            else -> expense.expenseAmount =
-                                expense.expenseAmount // it request else part, what to do :)
-                        }
-                    }
-                    Money.DOLAR.symbol -> {
-                        when (expense.expenseType) {
-                            Money.TL.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.TRY_USD).roundToInt()
-                            Money.STERLIN.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.GBP_USD).roundToInt()
-                            Money.EURO.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.EUR_USD).roundToInt()
-                            else -> expense.expenseAmount =
-                                expense.expenseAmount // it request else part, what to do :)
-                        }
-                    }
-                    else -> {
-                        when (expense.expenseType) {
-                            Money.STERLIN.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.GBP_TRY).roundToInt()
-                            Money.DOLAR.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.USD_TRY).roundToInt()
-                            Money.EURO.symbol -> expense.expenseAmount =
-                                (expense.expenseAmount * converter.EUR_TRY).roundToInt()
-                            else -> expense.expenseAmount =
-                                expense.expenseAmount // it request else part, what to do :)
-                        }
-                    }
-                }
-
-            }
-            return@map newList
-        }
-
-
-
-
-
-
-
+    init {
+        _currencyType.value = ""
+        val con = sharedpreferences.getString("Converter", Json.encodeToString(Converter.neutral))
+        _currentConverter.value = con?.let { Json.decodeFromString<Converter>(it) }
+    }
 
 
     public fun updateExchangeRates() {
@@ -140,21 +119,31 @@ class MainViewModel(
             Money.EURO.symbol -> getExchangeRate("EUR")
             Money.STERLIN.symbol -> getExchangeRate("GBP")
             Money.DOLAR.symbol -> getExchangeRate("USD")
-            else -> getExchangeRate("TRY")
+            Money.TL.symbol  -> getExchangeRate("TRY")
+            else -> getExchangeRate("")
         }
     }
 
+
+    public fun makeCurrencyTypeEmpty() {
+        if (currencyType.value != "")
+            _currencyType.value = ""
+    }
     public fun makeCurrencyTypeTL() {
-        _currencyType.value = Money.TL.symbol
+        if (currencyType.value != Money.TL.symbol)
+            _currencyType.value = Money.TL.symbol
     }
     public fun makeCurrencyTypeEuro() {
-        _currencyType.value = Money.EURO.symbol
+        if (currencyType.value != Money.EURO.symbol)
+            _currencyType.value = Money.EURO.symbol
     }
     public fun makeCurrencyTypeDolar() {
-        _currencyType.value = Money.DOLAR.symbol
+        if (currencyType.value != Money.DOLAR.symbol)
+            _currencyType.value = Money.DOLAR.symbol
     }
     public fun makeCurrencyTypeSterlin() {
-        _currencyType.value = Money.STERLIN.symbol
+        if (currencyType.value != Money.STERLIN.symbol)
+            _currencyType.value = Money.STERLIN.symbol
     }
 
     private fun getExpenses(expense: Expense) {
@@ -167,17 +156,56 @@ class MainViewModel(
     fun getExchangeRate(exchange: String) {
         viewModelScope.launch {
             try {
-                _currentConverter.value = mainRepository.getExchangeRate(exchange)
-                _response.value = "OK"
+                val cur: Converter = currentConverter.value!!
+                val new: Converter = mainRepository.getExchangeRate(exchange)
+                cur.mergeMutable(new)
+                _currentConverter.value = cur
+                _response.value = Json.encodeToString(cur)
             } catch (e: Exception) {
                 _response.value = "Failure: ${e.message}"
-
-                // Yapmaya çalıştım ama olmadı.
-                //val converterString: String? = sharedPref.getString("converter", "")
-                //val converter: Converter = Json.decodeFromString<Converter>(converterString!!)
-                //_currentConverter.value = converter
             }
         }
+    }
+
+
+    fun getProperAmount(currencyType: String, expense: Expense, converter: Converter): Int {
+        var converted : Int = expense.expenseAmount
+        when (currencyType) {
+            Money.EURO.symbol -> {
+                when (expense.expenseType) {
+                    Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_EUR).roundToInt()
+                    Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_EUR).roundToInt()
+                    Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_EUR).roundToInt()
+                    Money.EURO.symbol -> converted = expense.expenseAmount
+                }
+            }
+            Money.STERLIN.symbol -> {
+                when (expense.expenseType) {
+                    Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_GBP).roundToInt()
+                    Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_GBP).roundToInt()
+                    Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_GBP).roundToInt()
+                    Money.STERLIN.symbol -> converted = expense.expenseAmount
+                }
+            }
+            Money.DOLAR.symbol -> {
+                when (expense.expenseType) {
+                    Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_USD).roundToInt()
+                    Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_USD).roundToInt()
+                    Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_USD).roundToInt()
+                    Money.DOLAR.symbol -> converted = expense.expenseAmount
+                }
+            }
+            Money.TL.symbol -> {
+                when (expense.expenseType) {
+                    Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_TRY).roundToInt()
+                    Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_TRY).roundToInt()
+                    Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_TRY).roundToInt()
+                    Money.TL.symbol -> converted = expense.expenseAmount
+                }
+            }
+            else -> converted = expense.expenseAmount
+        }
+        return converted
     }
 
     //Callback example, I keep it just for memo
