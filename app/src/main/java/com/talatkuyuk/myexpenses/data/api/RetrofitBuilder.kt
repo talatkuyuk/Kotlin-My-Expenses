@@ -6,7 +6,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object RetrofitBuilder {
 
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "https://android-bootcamp-exchange-rate.herokuapp.com"
+    //private const val BASE_URL = "http://10.0.2.2:3000/"
     //private const val BASE_URL = "https://free.currconv.com/api/v7/"
 
     private fun getRetrofit(): Retrofit {

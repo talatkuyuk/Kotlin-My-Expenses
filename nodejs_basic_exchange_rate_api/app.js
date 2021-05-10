@@ -2,13 +2,16 @@ const fetch = require('node-fetch')
 const express = require('express')
 
 const app = express()
-const port = 3000
+app.use(express.static("info"))
+
+const port = process.env.PORT || 3000
+const API_KEY = "50fc9de4a729557262c5";
 
 
 app.get('/:currency', async (req, res) => {
 
 	const getURI = (exchange) => {
-		return `https://free.currconv.com/api/v7/convert?q=${exchange}&compact=ultra&apiKey=50fc9de4a729557262c5`
+		return `https://free.currconv.com/api/v7/convert?q=${exchange}&compact=ultra&apiKey=${API_KEY}`
 	}
 	const currency = req.params.currency
 
@@ -113,5 +116,5 @@ app.get('/:currency', async (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Exchange Rate App is listening at :${port}`)
 })
