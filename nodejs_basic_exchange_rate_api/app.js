@@ -1,9 +1,9 @@
-const { request } = require('express')
 const fetch = require('node-fetch')
-
 const express = require('express')
+
 const app = express()
 const port = 3000
+
 
 app.get('/:currency', async (req, res) => {
 
@@ -12,7 +12,7 @@ app.get('/:currency', async (req, res) => {
 	}
 	const currency = req.params.currency
 
-	const response = {};
+	let response = {};
 
 	try {
 
@@ -21,15 +21,15 @@ app.get('/:currency', async (req, res) => {
 
 				const rtu = await fetch(getURI("TRY_USD"));
 				const jtu = await rtu.json()
-				response.TRY_USD = jtu.TRY_USD
+				response.TRY_USD = jtu.TRY_USD ?? 0.0
 
 				const reu = await fetch(getURI("EUR_USD"));
 				const jeu = await reu.json()
-				response.EUR_USD = jeu.EUR_USD
+				response.EUR_USD = jeu.EUR_USD ?? 0.0
 
 				const rgu = await fetch(getURI("GBP_USD"));
 				const jgu = await rgu.json()
-				response.GBP_USD = jgu.GBP_USD
+				response.GBP_USD = jgu.GBP_USD ?? 0.0
 				break;
 			
 
@@ -37,15 +37,15 @@ app.get('/:currency', async (req, res) => {
 
 				const rut = await fetch(getURI("USD_TRY"));
 				const jut = await rut.json()
-				response.USD_TRY = jut.USD_TRY
+				response.USD_TRY = jut.USD_TRY ?? 0.0
 
 				const ret = await fetch(getURI("EUR_TRY"));
 				const jet = await ret.json()
-				response.EUR_TRY = jet.EUR_TRY
+				response.EUR_TRY = jet.EUR_TRY ?? 0.0
 
 				const rgt = await fetch(getURI("GBP_TRY"));
 				const jgt = await rgt.json()
-				response.GBP_TRY = jgt.GBP_TRY
+				response.GBP_TRY = jgt.GBP_TRY ?? 0.0
 				break;
 			
 			
@@ -53,15 +53,15 @@ app.get('/:currency', async (req, res) => {
 
 				const rue = await fetch(getURI("USD_EUR"));
 				const jue = await rue.json()
-				response.USD_EUR = jue.USD_EUR
+				response.USD_EUR = jue.USD_EUR ?? 0.0
 
 				const rte = await fetch(getURI("TRY_EUR"));
 				const jte = await rte.json()
-				response.TRY_EUR = jte.TRY_EUR
+				response.TRY_EUR = jte.TRY_EUR ?? 0.0
 
 				const rge = await fetch(getURI("GBP_EUR"));
 				const jge = await rge.json()
-				response.GBP_EUR = jge.GBP_EUR
+				response.GBP_EUR = jge.GBP_EUR ?? 0.0
 				break;
 
 
@@ -69,15 +69,15 @@ app.get('/:currency', async (req, res) => {
 
 				const rug = await fetch(getURI("USD_GBP"));
 				const jug = await rug.json()
-				response.USD_GBP = jug.USD_GBP
+				response.USD_GBP = jug.USD_GBP ?? 0.0
 
 				const rtg = await fetch(getURI("TRY_GBP"));
 				const jtg = await rtg.json()
-				response.TRY_GBP = jtg.TRY_GBP
+				response.TRY_GBP = jtg.TRY_GBP ?? 0.0
 
 				const reg = await fetch(getURI("EUR_GBP"));
 				const jeg = await reg.json()
-				response.EUR_GBP = jeg.EUR_GBP
+				response.EUR_GBP = jeg.EUR_GBP ?? 0.0
 				break;
 	
 		}
@@ -87,9 +87,29 @@ app.get('/:currency', async (req, res) => {
 
 	  } catch (err) {
 		console.log(err)
-		//res.send({"TRY_USD":0.121402,"EUR_USD":1.216325,"GBP_USD":1.39745})
-	  }
 
+		const num = 0
+		
+		switch (currency) {
+			case "USD": 
+				response = { TRY_USD: 0.0, EUR_USD: 0.0, GBP_USD: 0.0 }
+				break;
+			
+			case "TRY": 
+				response =  { USD_TRY: 0.0, EUR_TRY: 0.0, GBP_TRY: 0.0 }
+				break;
+			
+			case "EUR": 
+				response =  { USD_EUR: 0.0, TRY_EUR: 0.0, GBP_EUR: 0.0 }
+				break;
+
+			case "GBP": 
+				response =  { USD_GBP: 0.00, TRY_GBP: 0.0, EUR_GBP: 0.0 }
+				break;
+		}
+		console.log(response)
+		res.json(response)
+	  }
 })
 
 app.listen(port, () => {

@@ -96,6 +96,7 @@ class MainViewModel(
     init {
         _currencyType.value = ""
         _currentConverter.value = preferenceRepository.getConverter()
+        Log.d("VIEWMODEL INI CONVERTER", currentConverter.value.toString())
     }
 
 

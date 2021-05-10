@@ -1,6 +1,7 @@
 package com.talatkuyuk.myexpenses.data.model
 
 import com.google.gson.annotations.SerializedName
+import com.talatkuyuk.myexpenses.enums.Money
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,6 +34,33 @@ data class Converter(
         }
 
         fun fun2(i: Int): Converter = Converter(/*create your params*/)
+    }
+
+    fun hasValidPart(currencyType: String): Boolean {
+        var bool: Boolean = true
+        when(currencyType) {
+            Money.TL.symbol -> {
+                if (this.EUR_TRY == 1.0) { bool = false }
+                if (this.GBP_TRY == 1.0) { bool = false }
+                if (this.USD_TRY == 1.0) { bool = false }
+            }
+            Money.EURO.symbol -> {
+                if (this.TRY_EUR == 1.0) { bool = false }
+                if (this.GBP_EUR == 1.0) { bool = false }
+                if (this.USD_EUR == 1.0) { bool = false }
+            }
+            Money.STERLIN.symbol -> {
+                if (this.TRY_GBP == 1.0) { bool = false }
+                if (this.EUR_GBP == 1.0) { bool = false }
+                if (this.USD_GBP == 1.0) { bool = false }
+            }
+            Money.DOLAR.symbol -> {
+                if (this.TRY_USD == 1.0) { bool = false }
+                if (this.GBP_USD == 1.0) { bool = false }
+                if (this.EUR_USD == 1.0) { bool = false }
+            }
+        }
+        return bool
     }
 
 

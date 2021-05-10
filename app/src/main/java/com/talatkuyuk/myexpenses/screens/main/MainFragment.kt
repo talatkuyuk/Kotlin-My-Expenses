@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.talatkuyuk.myexpenses.R
 import com.talatkuyuk.myexpenses.data.api.ApiHelper
 import com.talatkuyuk.myexpenses.data.api.RetrofitBuilder
@@ -111,6 +112,17 @@ class MainFragment : Fragment() {
         mainViewModel.response.observe(viewLifecycleOwner) {
             it.let {
                 Log.d("RETROFIT RESULT", it)
+                val converter = mainViewModel.currentConverter.value!!
+                if (!converter.hasValidPart(mainViewModel.currencyType.value!!)) {
+                    var message = "No available Exchange Rates."
+                    if (!Utils().isOnline(requireContext())){
+                        message += " This may cause because you are offline."
+                    } else {
+                        message += " This may cause because the API service is broken."
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                    //Snackbar.make(view, message, Snackbar.LENGTH_LONG).setAction("OK", {}).show()
+                }
             }
         }
 
@@ -125,7 +137,7 @@ class MainFragment : Fragment() {
         mainViewModel.currencyType.observe(viewLifecycleOwner) { type ->
             type.let {
                 mainViewModel.updateExchangeRates()
-                arrangeButtonsColor(it)
+                arrangeButtonColors(it)
             }
         }
 
@@ -165,7 +177,7 @@ class MainFragment : Fragment() {
     }
 
 
-    private fun arrangeButtonsColor(type: String) {
+    private fun arrangeButtonColors(type: String) {
         when(type) {
             Money.TL.symbol -> {
                 binding.buttonTL.setTextColor(getResources().getColor(R.color.design_default_color_error))

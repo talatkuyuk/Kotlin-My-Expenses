@@ -11,6 +11,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
 
+// https://arkapp.medium.com/how-to-use-shared-preferences-the-easy-and-fastest-way-98ce2013bf51
+
 class PreferenceRepository(val context: Context) {
 
     // The others uses special SharedPreferences file
@@ -61,10 +63,10 @@ class PreferenceRepository(val context: Context) {
 
     fun getConverter(): Converter {
         PREF_CONVERTER.getString().also {
-            return if (it != "" && it.isEmpty())
-                Json.decodeFromString<Converter>(PREF_CONVERTER.getString())
-            else
+            return if (it == "" || it.isEmpty())
                 Converter.neutral
+            else
+                Json.decodeFromString<Converter>(PREF_CONVERTER.getString())
         }
     }
 
