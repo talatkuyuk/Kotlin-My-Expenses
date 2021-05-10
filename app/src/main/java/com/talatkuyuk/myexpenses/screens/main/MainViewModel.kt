@@ -33,7 +33,8 @@ class MainViewModel(
     private val mainRepository: MainRepository
 ) : ViewModel() {
 
-    private val sharedpreferences: SharedPreferences  = application.getSharedPreferences("ExpenseShare", Context.MODE_PRIVATE)
+    //private val sharedpreferences: SharedPreferences  = application.getSharedPreferences("ExpenseShare", Context.MODE_PRIVATE)
+    private val preferenceRepository by lazy { PreferenceRepository(application.applicationContext) }
 
     private val _response = MutableLiveData<String>()
     val response: LiveData<String>
@@ -53,49 +54,34 @@ class MainViewModel(
         return@map it == Money.TL.symbol
     }
 
-    var allExpenses: LiveData<List<Expense>> = database.getAllExpenses()
-
-    val allExpensesConverted: LiveData<List<Expense>> = Transformations.switchMap(response,
-        { res -> getConvertedExpenses(res) })
+    val allExpenses: LiveData<List<Expense>> = Transformations.switchMap(
+        response,
+        { value -> getConvertedExpenses(value) }
+    )
 
     private fun getConvertedExpenses(string: String)
-        : LiveData<List<Expense>> = Transformations.map(allExpenses)  { originalExpenseList ->
+        : LiveData<List<Expense>> = database.getAllExpenses().map { originalExpenseList ->
 
             if (currencyType.value == "") {
                 return@map originalExpenseList
-                // allExpensenses, yani bu fonksiyona giren originalExpenseList aslında hep orjinal kalıyor, onda sıkıntı yok. Kontrol ettim.
-                // Herhangi bir para birimi seçilmediğinde aslında allExpenses LiveData'sına tekrar bakıp orjinal listenin aynısını döndürmesi lazım
-                // amma-velakin neden döndürmüyor da hala allExpensesConverted'ın son halini kale alıyor onu çözemedim.
-                // Rakamlardaki sıkıntı bu fonksiyondan kaynaklanıyor. Ve tabiki aşağıdaki else part'ta da aynı sıkıntı var.
-                // Sonuçta rakamlar WEIRD oldu, çözemedim. Aslında bu fonksiyonu doğru çattığımı düşünüyorum.
 
             } else {
                 originalExpenseList.forEach {
                     it.expenseAmount = getProperAmount(currencyType.value!!, it, currentConverter.value!!)
                 }
-                Log.d("getConvertedExpenses", allExpenses.toString())
                 return@map originalExpenseList
-
-                // Aşağıdaki kod da işe yaramadı, yeni bir listeye aktarayım dedim ama bu da kâr etmedi.
-                //val liveData: LiveData<List<Expense>> = MutableLiveData<List<Expense>>()
-                /*val list  = mutableListOf<Expense>()
-                for (expense in it) {
-                    expense.let {
-                        val x = expense
-                        x.expenseAmount = getProperAmount(_currencyType.value!!, expense, converter)
-                        list.add(x)
-                    }
-                }*/
-                //return@map it
             }
-
     }
 
-    val totalAmount: LiveData<String> = Transformations.map(allExpensesConverted) { expenses ->
+    val countExpenses: LiveData<Int> = Transformations.map(allExpenses) { expenses -> return@map expenses?.size ?: 0 }
+
+    val totalAmount: LiveData<String> = Transformations.map(allExpenses) { expenses ->
         var total: Int = 0
+
         for (expense in expenses) {
             total += expense.expenseAmount
         }
+
         val dec = DecimalFormat("#,###")
         val formattedTotal = dec.format(total)
 
@@ -109,8 +95,7 @@ class MainViewModel(
 
     init {
         _currencyType.value = ""
-        val con = sharedpreferences.getString("Converter", Json.encodeToString(Converter.neutral))
-        _currentConverter.value = con?.let { Json.decodeFromString<Converter>(it) }
+        _currentConverter.value = preferenceRepository.getConverter()
     }
 
 
@@ -146,21 +131,15 @@ class MainViewModel(
             _currencyType.value = Money.STERLIN.symbol
     }
 
-    private fun getExpenses(expense: Expense) {
-        viewModelScope.launch {
-            allExpenses = database.getAllExpenses()
-        }
-    }
-
     //Repository pattern worked :)
     fun getExchangeRate(exchange: String) {
         viewModelScope.launch {
             try {
-                val cur: Converter = currentConverter.value!!
+                val current: Converter = currentConverter.value!!
                 val new: Converter = mainRepository.getExchangeRate(exchange)
-                cur.mergeMutable(new)
-                _currentConverter.value = cur
-                _response.value = Json.encodeToString(cur)
+                current.mergeMutable(new)
+                _currentConverter.value = current
+                _response.value = Json.encodeToString(current)
             } catch (e: Exception) {
                 _response.value = "Failure: ${e.message}"
             }
@@ -168,9 +147,9 @@ class MainViewModel(
     }
 
 
-    fun getProperAmount(currencyType: String, expense: Expense, converter: Converter): Int {
+    fun getProperAmount(currency: String, expense: Expense, converter: Converter): Int {
         var converted : Int = expense.expenseAmount
-        when (currencyType) {
+        when (currency) {
             Money.EURO.symbol -> {
                 when (expense.expenseType) {
                     Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_EUR).roundToInt()
@@ -209,7 +188,7 @@ class MainViewModel(
     }
 
     //Callback example, I keep it just for memo
-    fun getExchangeRateXX(exchange: String, callback: (Double) -> Unit) {
+    fun getExchangeRateWithCallback(exchange: String, callback: (Double) -> Unit) {
         viewModelScope.launch {
             try {
                 val converter: Converter = mainRepository.getExchangeRate(exchange)

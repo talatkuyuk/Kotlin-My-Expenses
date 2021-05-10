@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.talatkuyuk.myexpenses.data.model.Converter
 import com.talatkuyuk.myexpenses.utils.*
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
@@ -56,6 +57,15 @@ class PreferenceRepository(val context: Context) {
     fun setConverter(converter: Converter) {
         val str: String = Json.encodeToString(converter)
         PREF_CONVERTER.put(str)
+    }
+
+    fun getConverter(): Converter {
+        PREF_CONVERTER.getString().also {
+            return if (it != "" && it.isEmpty())
+                Json.decodeFromString<Converter>(PREF_CONVERTER.getString())
+            else
+                Converter.neutral
+        }
     }
 
     fun setLastTime(date: Date) {

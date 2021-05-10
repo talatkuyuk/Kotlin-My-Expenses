@@ -72,44 +72,4 @@ class MyRecyclerViewAdapter(
             return super.toString() + " '" + titleView.text + "'"
         }
     }
-
-    fun getProperAmount(currencyType: String, expense: Expense, converter: Converter): Int {
-            var converted : Int = 999
-            when (currencyType) {
-                Money.EURO.symbol -> {
-                    when (expense.expenseType) {
-                        Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_EUR).roundToInt()
-                        Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_EUR).roundToInt()
-                        Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_EUR).roundToInt()
-                        Money.EURO.symbol -> converted = expense.expenseAmount
-                    }
-                }
-                Money.STERLIN.symbol -> {
-                    when (expense.expenseType) {
-                        Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_GBP).roundToInt()
-                        Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_GBP).roundToInt()
-                        Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_GBP).roundToInt()
-                        Money.STERLIN.symbol -> converted = expense.expenseAmount
-                    }
-                }
-                Money.DOLAR.symbol -> {
-                    when (expense.expenseType) {
-                        Money.TL.symbol -> converted = (expense.expenseAmount * converter.TRY_USD).roundToInt()
-                        Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_USD).roundToInt()
-                        Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_USD).roundToInt()
-                        Money.DOLAR.symbol -> converted = expense.expenseAmount
-                    }
-                }
-                Money.TL.symbol -> {
-                    when (expense.expenseType) {
-                        Money.STERLIN.symbol -> converted = (expense.expenseAmount * converter.GBP_TRY).roundToInt()
-                        Money.DOLAR.symbol -> converted = (expense.expenseAmount * converter.USD_TRY).roundToInt()
-                        Money.EURO.symbol -> converted = (expense.expenseAmount * converter.EUR_TRY).roundToInt()
-                        Money.TL.symbol -> converted = expense.expenseAmount
-                    }
-                }
-                else -> converted = expense.expenseAmount
-            }
-            return converted
-        }
 }

@@ -81,7 +81,7 @@ class MainFragment : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        mainViewModel.allExpensesConverted.observe(viewLifecycleOwner) { expenses ->
+        mainViewModel.allExpenses.observe(viewLifecycleOwner) { expenses ->
             expenses.let {
                 //Log.d("CURRENT EXPENSE LIST", it.toString())
 
@@ -114,17 +114,18 @@ class MainFragment : Fragment() {
             }
         }
 
+        mainViewModel.countExpenses.observe(viewLifecycleOwner) { count ->
+            if (  count == 0) {
+                binding.textViewNoContent.visibility = View.VISIBLE
+            } else {
+                binding.textViewNoContent.visibility = View.GONE
+            }
+        }
+
         mainViewModel.currencyType.observe(viewLifecycleOwner) { type ->
             type.let {
                 mainViewModel.updateExchangeRates()
                 arrangeButtonsColor(it)
-                mainViewModel.allExpenses.value.let {
-                    if (  it == null || it.size == 0) {
-                        binding.textViewNoContent.visibility = View.VISIBLE
-                    } else {
-                        binding.textViewNoContent.visibility = View.GONE
-                    }
-                }
             }
         }
 
