@@ -18,6 +18,7 @@ import com.talatkuyuk.myexpenses.databinding.FragmentExpenseDetailBinding
 import com.talatkuyuk.myexpenses.enums.Category
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.text.DecimalFormat
 
 class ExpenseDetailFragment : Fragment() {
 
@@ -89,7 +90,10 @@ class ExpenseDetailFragment : Fragment() {
             else -> R.drawable.category_other
         })
 
+        val dec = DecimalFormat("#,###")
+        val formattedAmount = dec.format(expense.expenseAmount)
+
         binding.textDescForDetail.setText(expense.expenseTitle)
-        binding.textAmountForDetail.setText(expense.expenseAmount.toString() + expense.expenseType)
+        binding.textAmountForDetail.setText(formattedAmount.toString() + currencyType)
     }
 }

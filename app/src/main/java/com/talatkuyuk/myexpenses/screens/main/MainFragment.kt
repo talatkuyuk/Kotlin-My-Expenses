@@ -86,12 +86,17 @@ class MainFragment : Fragment() {
             expenses.let {
                 //Log.d("CURRENT EXPENSE LIST", it.toString())
 
-                recyclerView.adapter = MyRecyclerViewAdapter(it, mainViewModel.currencyType.value!!, {
-                    val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
-                        Json.encodeToString(it)
-                    )
-                    binding.root.findNavController().navigate(action)
-                })
+                val currencyType = mainViewModel.currencyType.value!!
+
+                recyclerView.adapter = MyRecyclerViewAdapter(
+                    it,
+                    currencyType,
+                    {
+                        val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
+                            Json.encodeToString(it), currencyType)
+                        binding.root.findNavController().navigate(action)
+                    }
+                )
             }
         }
 
