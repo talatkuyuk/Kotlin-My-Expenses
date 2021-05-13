@@ -76,6 +76,19 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/cardview_text_size"
                 android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="155dp"
+                android:layout_marginBottom="12dp"
+                android:layout_gravity="end|center"
+                android:indeterminateTint="@color/orange"
+                android:scrollbarSize="8dp"
+                android:visibility="visible" />
+
         </androidx.cardview.widget.CardView>
 
         <Button

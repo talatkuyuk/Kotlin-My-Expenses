@@ -70,6 +70,10 @@ class MainFragment : Fragment() {
 
         val viewModelFactory = MainViewModelFactory(application, dataSource, apiHelper)
 
+        //progressbar = BtnLoadingProgressbar(view)
+        //progressbar.setLoading()
+        //progressbar.setState(true){}
+
         mainViewModel =
             ViewModelProvider(
                 this, viewModelFactory).get(MainViewModel::class.java)
@@ -101,13 +105,24 @@ class MainFragment : Fragment() {
         }
 
         mainViewModel.isTL.observe(viewLifecycleOwner) {
-            it.let {
+            it?.let {
                 //Log.d("TL BUTTON SELECTED", it.toString())
             }
         }
 
+        mainViewModel.progressBar.observe(viewLifecycleOwner) {
+                if (it) {
+                    binding.progressBar.visibility = View.VISIBLE
+                    Log.d("PROGRESS BAR: ", it.toString())
+                }
+                else {
+                    binding.progressBar.visibility = View.INVISIBLE
+                    Log.d("PROGRESS BAR: ", it.toString())
+                }
+        }
+
         mainViewModel.currentConverter.observe(viewLifecycleOwner) {
-            it.let {
+            it?.let {
                 Log.d("CURRENT CONVERTER", it.toString())
                 if (!it.isNeutral())
                     preferenceRepository.setConverter(it)
@@ -115,7 +130,7 @@ class MainFragment : Fragment() {
         }
 
         mainViewModel.response.observe(viewLifecycleOwner) {
-            it.let {
+            it?.let {
                 Log.d("RETROFIT RESULT", it)
                 val converter = mainViewModel.currentConverter.value!!
                 if (!converter.hasValidPart(mainViewModel.currencyType.value!!)) {

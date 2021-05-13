@@ -1,28 +1,40 @@
 package com.talatkuyuk.myexpenses.screens.settings
 
-import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
 import com.talatkuyuk.myexpenses.R
 import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
 import com.talatkuyuk.myexpenses.utils.Utils
+
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
+    // only added for background, but didn't work !
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requireView().getResources().getColor(R.color.background, requireActivity().theme) // R.style.PreferenceThemeOverlay
+        }else {
+            requireView().getResources().getColor(R.color.background)
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
-        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 validatePreferences()
             }

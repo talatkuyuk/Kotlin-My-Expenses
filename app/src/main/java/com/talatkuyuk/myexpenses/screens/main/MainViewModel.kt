@@ -40,6 +40,10 @@ class MainViewModel(
     val response: LiveData<String>
         get() = _response
 
+    private val _progressBar = MutableLiveData<Boolean>()
+    val progressBar: LiveData<Boolean>
+        get() = _progressBar
+
     private val _currentConverter = MutableLiveData<Converter>()
     val currentConverter: LiveData<Converter>
         get() = _currentConverter
@@ -94,6 +98,7 @@ class MainViewModel(
 
 
     init {
+        _progressBar.value = false
         _currencyType.value = ""
         _currentConverter.value = preferenceRepository.getConverter()
         Log.d("VIEWMODEL INI CONVERTER", currentConverter.value.toString())
@@ -106,7 +111,7 @@ class MainViewModel(
             Money.STERLIN.symbol -> getExchangeRate("GBP")
             Money.DOLAR.symbol -> getExchangeRate("USD")
             Money.TL.symbol  -> getExchangeRate("TRY")
-            else -> getExchangeRate("")
+            else -> _response.value = "Did not touch to retrofit" //getExchangeRate("")
         }
     }
 
@@ -136,12 +141,15 @@ class MainViewModel(
     fun getExchangeRate(exchange: String) {
         viewModelScope.launch {
             try {
+                _progressBar.value = true
                 val current: Converter = currentConverter.value!!
                 val new: Converter = mainRepository.getExchangeRate(exchange)
+                _progressBar.value = false
                 current.mergeMutable(new)
                 _currentConverter.value = current
                 _response.value = Json.encodeToString(current)
             } catch (e: Exception) {
+                _progressBar.value = false
                 _response.value = "Failure: ${e.message}"
             }
         }
@@ -212,13 +220,33 @@ class MainViewModel(
         return null
     }
 
-    // merging two objects with reflection
+    // https://gist.github.com/josdejong/fbb43ae33fcdd922040dac4ffc31aeaf
+    // merging two objects with reflection only the keys is not null
     infix inline fun <reified T : Any> T.merge(other: T): T {
         val nameToProperty = T::class.declaredMemberProperties.associateBy { it.name }
         val primaryConstructor = T::class.primaryConstructor!!
         val args = primaryConstructor.parameters.associate { parameter ->
             val property = nameToProperty[parameter.name]!!
             parameter to (property.get(other) ?: property.get(this))
+        }
+        return primaryConstructor.callBy(args)
+    }
+
+    // https://gist.github.com/josdejong/fbb43ae33fcdd922040dac4ffc31aeaf
+    // merging two objects with reflection only the keys is not null and not double with value 0.0
+    infix inline fun <reified T : Any> T.mergeIgnoreZero(other: T): T {
+        val nameToProperty = T::class.declaredMemberProperties.associateBy { it.name }
+        val primaryConstructor = T::class.primaryConstructor!!
+        val args = primaryConstructor.parameters.associateWith { parameter ->
+            val property = nameToProperty[parameter.name]!!
+            val valueOther = property.get(other)
+            val valueThis = property.get(this)
+
+            if (valueOther is Double && valueOther == 0.0) {
+                valueThis
+            } else {
+                valueOther ?: valueThis
+            }
         }
         return primaryConstructor.callBy(args)
     }

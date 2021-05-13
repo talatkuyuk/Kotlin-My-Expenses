@@ -1,7 +1,6 @@
 <PreferenceScreen
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/background">
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory
         app:title="@string/pref_header_identity"
