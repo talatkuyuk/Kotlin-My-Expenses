@@ -3,6 +3,7 @@
     <dimen name="text_margin">16dp</dimen>
     <dimen name="default_margin">10dp</dimen>
     <dimen name="mainview_margin_from_side">10dp</dimen>
+    <dimen name="button_inner_padding">10dp</dimen>
     <dimen name="cardview_margin_from_side">15dp</dimen>
     <dimen name="cardview_margin_from_eachother">15dp</dimen>
     <dimen name="cardview_text_size">20sp</dimen>
