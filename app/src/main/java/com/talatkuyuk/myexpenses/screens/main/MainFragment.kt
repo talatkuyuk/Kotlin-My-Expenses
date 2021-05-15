@@ -15,19 +15,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.talatkuyuk.myexpenses.R
 import com.talatkuyuk.myexpenses.data.api.ApiHelper
 import com.talatkuyuk.myexpenses.data.api.RetrofitBuilder
 import com.talatkuyuk.myexpenses.data.repository.PreferenceRepository
-import com.talatkuyuk.myexpenses.database.Expense
 import com.talatkuyuk.myexpenses.database.ExpenseDatabase
 import com.talatkuyuk.myexpenses.databinding.FragmentMainBinding
 import com.talatkuyuk.myexpenses.enums.Money
 import com.talatkuyuk.myexpenses.utils.Utils
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -37,7 +33,8 @@ class MainFragment : Fragment() {
     //private lateinit var sharedPreferences: SharedPreferences
     private val preferenceRepository by lazy { PreferenceRepository(requireContext()) }
 
-    private lateinit var binding: FragmentMainBinding
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var mainViewModel: MainViewModel
 
@@ -58,7 +55,7 @@ class MainFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(
+        _binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_main, container, false)
         val view = binding.root
 
@@ -79,26 +76,42 @@ class MainFragment : Fragment() {
                 this, viewModelFactory).get(MainViewModel::class.java)
 
         binding.mainViewModel = mainViewModel
-
         binding.lifecycleOwner = viewLifecycleOwner
 
         val recyclerView: RecyclerView = binding.list
-
         recyclerView.layoutManager = LinearLayoutManager(context)
+
+        // hides when it is scrooling down to see the content below
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy<0 && !binding.extendedFab.isShown) {
+                    binding.extendedFab.show()
+                } else if (dy>0 && binding.extendedFab.isShown) {
+                    binding.extendedFab.hide()
+                }
+                super.onScrolled(recyclerView, dx, dy)
+            }
+        })
 
         mainViewModel.allExpenses.observe(viewLifecycleOwner) { expenses ->
             expenses.let {
                 //Log.d("CURRENT EXPENSE LIST", it.toString())
 
-                val currencyType = mainViewModel.currencyType.value!!
+                var currencyType = mainViewModel.currencyType.value!!
 
                 recyclerView.adapter = MyRecyclerViewAdapter(
                     it,
                     currencyType,
                     {
-                        val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
-                            Json.encodeToString(it), currencyType)
-                        binding.root.findNavController().navigate(action)
+                        if (currencyType == "") {
+                            val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
+                                Json.encodeToString(it), it.expenseType)
+                            binding.root.findNavController().navigate(action)
+                        } else {
+                            val action = MainFragmentDirections.actionMainFragmentToExpenseDetailFragment(
+                                Json.encodeToString(it), currencyType)
+                            binding.root.findNavController().navigate(action)
+                        }
                     }
                 )
             }
@@ -165,6 +178,8 @@ class MainFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        super.onViewCreated(view, savedInstanceState)
 
         setIdendity()
 
@@ -235,6 +250,11 @@ class MainFragment : Fragment() {
                 binding.buttonOriginal.setTextColor(getResources().getColor(R.color.design_default_color_error))
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

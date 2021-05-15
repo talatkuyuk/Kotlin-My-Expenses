@@ -1,6 +1,5 @@
 package com.talatkuyuk.myexpenses.screens.onboarding
 
-import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Bundle
@@ -11,9 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.core.content.edit
 import androidx.navigation.findNavController
-import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.onboarding.ViewPagerAdapter
 import com.talatkuyuk.myexpenses.R
@@ -61,6 +58,9 @@ class OnboardingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        super.onViewCreated(view, savedInstanceState)
+
         viewPagerAdapter = ViewPagerAdapter(getOnboardingItems())
         viewPager = view.findViewById<ViewPager2>(R.id.onboardingViewPager)
         viewPager.adapter = viewPagerAdapter

@@ -22,7 +22,8 @@ import java.text.DecimalFormat
 
 class ExpenseDetailFragment : Fragment() {
 
-    private lateinit var binding: FragmentExpenseDetailBinding
+    private var _binding: FragmentExpenseDetailBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +31,7 @@ class ExpenseDetailFragment : Fragment() {
     ): View {
 
         // Get a reference to the binding object and inflate the fragment views.
-        binding = DataBindingUtil.inflate(
+        _binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_expense_detail, container, false)
 
         val application = requireNotNull(this.activity).application
@@ -74,6 +75,8 @@ class ExpenseDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        super.onViewCreated(view, savedInstanceState)
+
         val args: ExpenseDetailFragmentArgs by navArgs()
         val expense: Expense = Json.decodeFromString<Expense>(args.expense)
         val currencyType = args.currencyType
@@ -95,5 +98,10 @@ class ExpenseDetailFragment : Fragment() {
 
         binding.textDescForDetail.setText(expense.expenseTitle)
         binding.textAmountForDetail.setText(formattedAmount.toString() + currencyType)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -12,7 +12,15 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
 
-        <!-- added for settings page -->
+        <!-- added for settings page, all fragments are affected -->
         <item name="android:windowBackground">@color/background</item>
+
+        <!-- https://stackoverflow.com/questions/3551169/change-background-color-of-preference/67537994#67537994-->
+        <!-- <item name="preferenceTheme">@style/preference</item>-->
     </style>
+
+<!--<style name="preference" parent="Theme.MaterialComponents or Theme.AppCompat or @style/PreferenceThemeOverlay">
+        <item name="android:background">@color/background</item>
+    </style>-->
+
 </resources>
